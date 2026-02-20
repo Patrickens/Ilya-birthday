@@ -8,6 +8,8 @@ const s1 = {
   _dragging: false,
   _sailDeg: 180,
   _animating: false,
+  _ilya2Img: null,
+  _boatX: 0,
 
   render(app) {
     const leg = gameState.sceneData.s1.leg;
@@ -17,6 +19,7 @@ const s1 = {
     this._sailDeg = 180;
     this._animating = false;
     this._t = 0;
+    this._boatX = -120;
 
     const narratives = [
       'You depart the St. Lawrence — a pine-scented coast at your back, a hand-drawn map in your pocket.',
@@ -34,6 +37,12 @@ const s1 = {
       <div class="feedback" id="feedback">Drag the sail tip to catch the wind</div>
     `;
 
+    if (!this._ilya2Img) {
+      const img = new Image();
+      img.src = 'pics/ILYA2_NOBG.png';
+      this._ilya2Img = img;
+    }
+
     const canvas = app.querySelector('#s1-canvas');
     canvas.width = 400;
     canvas.height = 300;
@@ -46,14 +55,14 @@ const s1 = {
     const canvas = this._canvas;
     if (!canvas) return;
     const W = canvas.width, H = canvas.height;
-    const cx = W / 2;
 
     const getAngle = (clientX, clientY) => {
+      const bx = W / 2 + this._boatX;
       const cy = Math.round(H * (gameState.sceneData.s1.leg === 2 ? 0.5 : 0.62));
       const rect = canvas.getBoundingClientRect();
       const scaleX = W / rect.width;
       const scaleY = H / rect.height;
-      const dx = (clientX - rect.left) * scaleX - cx;
+      const dx = (clientX - rect.left) * scaleX - bx;
       const dy = (clientY - rect.top) * scaleY - cy;
       return (Math.atan2(dy, dx) * 180 / Math.PI + 360) % 360;
     };
@@ -120,6 +129,8 @@ const s1 = {
     const loop = () => {
       if (!this._canvas) return;
       this._t++;
+      this._boatX += 0.7;
+      if (this._boatX > 130) this._boatX = -130;
       this._draw(this._ctx, this._canvas.width, this._canvas.height);
       this._raf = requestAnimationFrame(loop);
     };
@@ -145,7 +156,7 @@ const s1 = {
 
     // Boat
     const cy = Math.round(H * (leg === 2 ? 0.5 : 0.62));
-    this._drawBoat(ctx, W / 2, cy, this._sailDeg, leg);
+    this._drawBoat(ctx, W / 2 + this._boatX, cy, this._sailDeg, leg);
 
     // HUD
     ctx.fillStyle = 'rgba(0,0,0,0.38)';
@@ -516,6 +527,14 @@ const s1 = {
     // Hull sheen
     ctx.fillStyle = 'rgba(255,255,255,0.1)';
     ctx.beginPath(); ctx.ellipse(-5, -8, 6, 18, -0.3, 0, Math.PI * 2); ctx.fill();
+
+    // Ilya on the boat
+    const img = this._ilya2Img;
+    if (img && img.complete && img.naturalHeight > 0) {
+      const iH = 38;
+      const iW = img.naturalWidth * (iH / img.naturalHeight);
+      ctx.drawImage(img, -iW / 2, -iH / 2, iW, iH);
+    }
 
     // Mast dot
     ctx.fillStyle = '#b07040';

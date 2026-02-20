@@ -173,20 +173,200 @@ Complete when all four solved.
 
 ---
 
-## Scene 3 — Geometry of 40 (Option A Only)
+You are implementing Scene 3 of a static browser game built with plain HTML, CSS, and JavaScript (no frameworks, no build tools, no npm, no external assets). The game already has a scene system and global gameState object.
 
-Display a 5x5 clickable grid.
+Replace Scene 3 with the following mini-game.
 
-Each tile toggles on/off.
+========================================
+SCENE 3 — “Route Optimization: Find the 40 Path”
+========================================
 
-Target pattern forms pixel-style "40".
+THEME
+A stylized Google Maps routing interface powered by math.
+The player must build a route from RIO to ZRH whose total cost equals exactly 40.
 
-No hints.
+This is NOT a real shortest-path algorithm.
+This is a small graph puzzle where the player manually selects nodes.
 
-When grid matches target pattern exactly:
-- mark scene complete
+----------------------------------------
+NARRATIVE TEXT (render at top)
+----------------------------------------
 
----
+Title: Route Optimization
+
+Text:
+“A familiar interface appears.”
+“From Rio to Zurich.”
+“Find the route whose total cost is exactly 40.”
+
+----------------------------------------
+GAME GOAL
+----------------------------------------
+
+Start node: RIO
+End node: ZRH
+
+Player builds a route by clicking connected nodes.
+When they reach ZRH:
+- If total cost === 40 → success
+- Otherwise → show “Recalculating…” and allow undo/reset
+
+----------------------------------------
+GRAPH DEFINITION (USE EXACTLY THIS)
+----------------------------------------
+
+Nodes:
+- RIO
+- DKR
+- LIS
+- BCN
+- MOS
+- ZRH
+
+Edges with weights (undirected):
+
+RIO — DKR : 10
+DKR — LIS : 8
+LIS — MOS : 13
+MOS — ZRH : 9
+RIO — LIS : 18
+LIS — BCN : 6
+BCN — ZRH : 17
+RIO — BCN : 15
+MOS — BCN : 11
+
+IMPORTANT:
+There must be exactly one clean solution summing to 40:
+
+Correct path:
+RIO (10) → DKR (8) → LIS (13) → MOS (9) → ZRH
+Total = 40
+
+Do not modify these weights.
+
+----------------------------------------
+DATA STRUCTURE REQUIREMENTS
+----------------------------------------
+
+Represent graph as an adjacency list object in JS.
+
+Example shape:
+graph = {
+  RIO: [{to:"DKR", weight:10}, ...],
+  ...
+}
+
+Maintain route state:
+currentRoute = ["RIO"]
+currentTotal = 0
+
+----------------------------------------
+UI REQUIREMENTS
+----------------------------------------
+
+Layout:
+
+1. Map Panel (center)
+- Render nodes as circles using inline SVG.
+- Render edges as lines.
+- Display weight labels on each edge.
+- Highlight selected route edges.
+- Highlight current node.
+
+2. Sidebar Panel (fake Google Maps style)
+- Start: RIO
+- Destination: ZRH
+- Route display:
+  RIO → DKR → ...
+- Total: XX
+
+3. Buttons:
+- Undo last
+- Reset route
+
+----------------------------------------
+INTERACTION RULES
+----------------------------------------
+
+- Player can only click nodes adjacent to the current node.
+- Clicking a valid node:
+    - Add node to route
+    - Add weight to total
+    - Highlight edge
+
+- If player clicks non-adjacent node:
+    - Briefly shake node or show small message “No direct route.”
+
+- Undo:
+    - Remove last node
+    - Subtract its edge weight
+    - Remove edge highlight
+
+- Reset:
+    - currentRoute = ["RIO"]
+    - total = 0
+    - clear highlights
+
+----------------------------------------
+SUCCESS CONDITION
+----------------------------------------
+
+When current node === ZRH:
+
+IF currentTotal === 40:
+    - Show:
+      “Route found: 40.”
+      “Optimal enough to sail by.”
+    - Mark Scene 3 as completed in gameState
+    - Enable Next button
+
+ELSE:
+    - Show:
+      “Recalculating…”
+    - Allow user to undo or reset
+    - Do NOT auto-reset
+
+----------------------------------------
+VISUAL STYLE
+----------------------------------------
+
+- Minimalist, clean.
+- Light map background (subtle grid or pale blue).
+- Nodes circular with label centered.
+- Active route edges colored differently (e.g., darker or thicker).
+- Subtle hover effect on clickable nodes.
+
+No external CSS libraries.
+
+----------------------------------------
+IMPLEMENTATION CONSTRAINTS
+----------------------------------------
+
+- No Dijkstra algorithm.
+- No complex layout engines.
+- Hardcode node positions in SVG (fixed coordinates).
+- Keep logic simple and readable.
+- No more than ~150–200 lines for this scene logic.
+
+----------------------------------------
+INTEGRATION
+----------------------------------------
+
+- Scene must integrate with existing showScene() system.
+- On success, set:
+    gameState.completed[2] = true
+- Persist to localStorage.
+- Unlock Next button.
+
+----------------------------------------
+END
+----------------------------------------
+
+Return only the Scene 3 implementation code (HTML template string + JS logic + minimal CSS additions if needed).
+Do not rewrite other scenes.
+
+----------------------------------------
+
 
 ## Scene 4 — Forró Memory Game
 
@@ -224,6 +404,25 @@ Happy 40th Birthday.
 
 Button:
 Restart
+
+---
+
+## 5) Assets — pics/ folder
+
+The `pics/` directory contains photos of Ilya used as decorative elements.
+These are local files — no external URLs.
+
+| File             | Used in   | Placement                                        |
+|------------------|-----------|--------------------------------------------------|
+| ILYA2_NOBG.png   | Scene 1   | Drawn on canvas shore (leg 0, Canadian scene) — Ilya standing on the dock waving goodbye |
+| ILYA_NOBG.png    | Scene 3   | HTML `<img>` positioned bottom-right of the SVG map |
+| ILYA.jpeg        | (unused)  | Full photo with background                       |
+| ILYA2.jpeg       | (unused)  | Full photo with background                       |
+| ILYA_FACE.jpeg   | (unused)  | Face crop                                        |
+| ILYA_FRIEND.jpeg | (unused)  | Photo with friend                                |
+| ILYA_MELI.jpeg   | (unused)  | Photo labelled Meli                              |
+
+Both `*_NOBG.png` files have transparent backgrounds, suitable for compositing.
 
 ---
 
