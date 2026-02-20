@@ -22,7 +22,7 @@ const s1 = {
     this._boatX = -120;
 
     const narratives = [
-      'You depart the St. Lawrence — a pine-scented coast at your back, a hand-drawn map in your pocket.',
+      'You depart from the shores near Toronto — a pine-scented coast at your back, a hand-drawn map in your pocket.',
       'The Atlantic opens wide. Nothing but water and sky. Trim your sail and trust the wind.',
       'The beaches of Brazil shimmer ahead. One perfect trim and you\'re there.'
     ];
@@ -55,13 +55,14 @@ const s1 = {
     const W = canvas.width, H = canvas.height;
 
     const getAngle = (clientX, clientY) => {
-      const bx = W / 2 + this._boatX;
-      const cy = Math.round(H * (gameState.sceneData.s1.leg === 2 ? 0.5 : 0.62));
-      const rect = canvas.getBoundingClientRect();
+      const bx   = W / 2 + this._boatX;
+      const hullY = Math.round(H * (gameState.sceneData.s1.leg === 2 ? 0.5 : 0.62));
+      const mastY = hullY - 35; // mast is 35px above hull centre
+      const rect  = canvas.getBoundingClientRect();
       const scaleX = W / rect.width;
       const scaleY = H / rect.height;
       const dx = (clientX - rect.left) * scaleX - bx;
-      const dy = (clientY - rect.top) * scaleY - cy;
+      const dy = (clientY - rect.top)  * scaleY - mastY;
       return (Math.atan2(dy, dx) * 180 / Math.PI + 360) % 360;
     };
 
@@ -534,15 +535,18 @@ const s1 = {
       ctx.drawImage(img, -iW / 2, -iH / 2, iW, iH);
     }
 
-    // Mast dot
-    ctx.fillStyle = '#b07040';
-    ctx.beginPath(); ctx.arc(0, 0, 4, 0, Math.PI * 2); ctx.fill();
+    // Mast at 1/4 from the top of the hull (hull half-height = 69, top = -69, 1/4 point = -35)
+    const mastY = -35;
 
-    // Work in a rotated frame so x-axis = boom direction
+    ctx.fillStyle = '#b07040';
+    ctx.beginPath(); ctx.arc(0, mastY, 4, 0, Math.PI * 2); ctx.fill();
+
+    // Work in a rotated frame so x-axis = boom direction, origin at mast
     const sailRad = (sailDeg - 90) * Math.PI / 180;
     const boomLen = 93;
 
     ctx.save();
+    ctx.translate(0, mastY);
     ctx.rotate(sailRad);
 
     // Sail: rectangle on one side of boom.
@@ -573,9 +577,9 @@ const s1 = {
 
     ctx.restore();
 
-    // Drag handle at boom tip (back in original space)
+    // Drag handle at boom tip (back in hull-centred space, offset by mastY)
     const boomX = Math.cos(sailRad) * boomLen;
-    const boomY = Math.sin(sailRad) * boomLen;
+    const boomY = Math.sin(sailRad) * boomLen + mastY;
     ctx.fillStyle = 'rgba(255,255,255,0.55)';
     ctx.strokeStyle = 'rgba(200,160,80,0.8)'; ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.arc(boomX, boomY, 7, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
