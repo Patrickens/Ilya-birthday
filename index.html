@@ -9,6 +9,16 @@
 <body>
   <div id="ui"></div>
   <div id="app"></div>
-  <script src="game.js"></script>
+
+  <!-- load order matters: state → engine → scenes → main -->
+  <script src="js/state.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/scene0.js"></script>
+  <script src="js/scene1.js"></script>
+  <script src="js/scene2.js"></script>
+  <script src="js/scene3.js"></script>
+  <script src="js/scene4.js"></script>
+  <script src="js/scene5.js"></script>
+  <script src="js/main.js"></script>
 </body>
 </html>
