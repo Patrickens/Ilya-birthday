@@ -124,8 +124,8 @@ const FORRO_CSS = `
       margin-bottom: 4px;
     }
 
-    /* Small cards (no labels — figure only) */
-    .move-card { height: 88px; }
+    /* Small cards — text only, compact */
+    .move-card { height: 58px; min-width: 0; padding: 0 0.4rem; font-size: 0.78rem; }
     .move-card.active .fl-stroke  { stroke: #c0703a; }
     .move-card.active .fl-stroke-lg { stroke: #c0703a; }
     .move-card.active {
@@ -151,23 +151,17 @@ const s3 = {
     // Small cards — text label only (player must match text to the animation they watched)
     const cardsHTML = FORRO_MOVES.map(m => `
       <div class="move-card" id="card-${m}">
-        <span style="font-size:1.05rem;font-weight:bold;color:var(--muted)">${FORRO_LABELS[m]}</span>
+        <span style="font-size:0.8rem;font-weight:bold;color:var(--muted);text-align:center;line-height:1.2">${FORRO_LABELS[m]}</span>
       </div>`).join('');
 
-    // Stage content for idle/input
+    // Stage content — idle filled by preview cycle in bind(); showing filled by s3PlaySequence
     let stageHTML = '';
-    if (phase === 'idle') {
-      stageHTML = `
-        <p style="color:#7a6050;font-size:0.92rem;margin:0">
-          Watch the sequence of moves, then mirror them.
-        </p>`;
-    } else if (phase === 'input') {
+    if (phase === 'input') {
       stageHTML = `
         <p style="color:#c0703a;font-weight:bold;font-size:1rem;margin:0">
           Your turn — tap the moves in order!
         </p>`;
     }
-    // 'showing' stage is filled dynamically by s3PlaySequence
 
     let controlsHTML = phase === 'idle'
       ? `<button class="primary" id="btn-watch">Watch the sequence</button>`
@@ -189,7 +183,9 @@ const s3 = {
     const feedback  = app.querySelector('#feedback');
 
     if (phase === 'idle') {
+      s3IdlePreview(app);   // start cycling through moves immediately
       addListener(app.querySelector('#btn-watch'), 'click', () => {
+        if (s3Timer) { clearTimeout(s3Timer); s3Timer = null; }
         gameState.sceneData.s3.sequence = Array.from({ length: 4 }, () =>
           FORRO_MOVES[Math.floor(Math.random() * FORRO_MOVES.length)]
         );
@@ -214,6 +210,24 @@ const s3 = {
     if (s3Timer) { clearTimeout(s3Timer); s3Timer = null; }
   }
 };
+
+// ── Idle preview: cycle through all 4 moves with labels so player can study them ──
+function s3IdlePreview(app) {
+  let idx = 0;
+  const stage = app.querySelector('#s3-stage');
+  function next() {
+    const move = FORRO_MOVES[idx % FORRO_MOVES.length];
+    if (stage) {
+      stage.innerHTML = `
+        ${forroSVG(move, true)}
+        <div class="stage-label">${FORRO_LABELS[move]}</div>
+        <div class="stage-counter" style="margin-top:6px">Study the moves, then click Watch</div>`;
+    }
+    idx++;
+    s3Timer = setTimeout(next, 1800);
+  }
+  next();
+}
 
 // ── Sequence playback ─────────────────────────────
 // Shows each move as a large figure in #s3-stage, then transitions to input
@@ -244,12 +258,11 @@ function s3PlaySequence(app) {
 
     const move = seq[step];
 
-    // Show large figure in stage
+    // Show large figure in stage — NO label, player must recognise the move
     if (stage) {
       stage.innerHTML = `
         <div class="stage-counter">Move ${step + 1} of ${seq.length}</div>
-        ${forroSVG(move, true)}
-        <div class="stage-label">${FORRO_LABELS[move]}</div>`;
+        ${forroSVG(move, true)}`;
     }
 
     // Also highlight the corresponding small card
@@ -274,13 +287,9 @@ function handleS3Input(move, app, feedback) {
   if (move === expected) {
     gameState.sceneData.s3.input.push(move);
 
-    // Show the move in the stage as confirmation
+    // Flash the move large in the stage as confirmation
     const stage = app.querySelector('#s3-stage');
-    if (stage) {
-      stage.innerHTML = `
-        ${forroSVG(move, true)}
-        <div class="stage-label">${FORRO_LABELS[move]}</div>`;
-    }
+    if (stage) stage.innerHTML = forroSVG(move, true);
 
     const card = app.querySelector(`#card-${move}`);
     if (card) {
