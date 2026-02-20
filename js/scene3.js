@@ -1,52 +1,133 @@
 // ── Scene 3 — Forró Dance (animated figures) ─────
-const FORRO_MOVES = ['Left', 'Right', 'Turn', 'Close'];
-const FORRO_LABELS = { Left: '← Step', Right: 'Step →', Turn: '↻ Turn', Close: '♡ Close' };
+const FORRO_MOVES  = ['Left', 'Right', 'Turn', 'Close'];
+const FORRO_LABELS = { Left: '← Step Left', Right: 'Step Right →', Turn: '↻ Turn', Close: '♡ Close' };
 let s3Timer = null;
 
-// Build an animated SVG stick figure for each move type.
-// Colour is driven by the parent .move-card via the fl-stroke CSS class.
-function forroSVG(move) {
-  const anim = {
-    Left:  'fl-left  1.0s ease-in-out infinite',
-    Right: 'fl-right 1.0s ease-in-out infinite',
-    Turn:  'fl-turn  1.2s linear infinite',
-    Close: 'fl-close 1.0s ease-in-out infinite'
-  }[move];
+// ── SVG stick-figure builders ────────────────────
+// Single figure (Left / Right / Turn)
+function _figureLines(cx, stroke) {
   return `
-    <svg viewBox="0 0 60 82" width="54" height="72" style="display:block;margin:0 auto 2px">
+    <circle cx="${cx}" cy="11" r="9"  class="${stroke}" fill="none" stroke-width="2.3"/>
+    <line x1="${cx}" y1="20" x2="${cx}"    y2="50"  class="${stroke}" stroke-width="2.3"/>
+    <line x1="${cx}" y1="33" x2="${cx-18}" y2="46"  class="${stroke}" stroke-width="2.3"/>
+    <line x1="${cx}" y1="33" x2="${cx+18}" y2="46"  class="${stroke}" stroke-width="2.3"/>
+    <line x1="${cx}" y1="50" x2="${cx-14}" y2="72"  class="${stroke}" stroke-width="2.3"/>
+    <line x1="${cx}" y1="50" x2="${cx+14}" y2="72"  class="${stroke}" stroke-width="2.3"/>`;
+}
+
+function forroSVG(move, large) {
+  if (move === 'Close') return forroSVGClose(large);
+
+  const W = large ? 90  : 56;
+  const H = large ? 115 : 74;
+  const sc = large ? 'fl-stroke-lg' : 'fl-stroke';
+
+  // Turn gets a perspective wrapper for the rotateY spin
+  if (move === 'Turn') {
+    return `
+      <div style="perspective:260px;display:flex;justify-content:center">
+        <svg viewBox="0 0 60 82" width="${W}" height="${H}"
+             style="display:block;overflow:visible">
+          <g style="animation:fl-turn 1.5s linear infinite;
+                    transform-box:fill-box;transform-origin:center center">
+            ${_figureLines(30, sc)}
+          </g>
+        </svg>
+      </div>`;
+  }
+
+  const anim = move === 'Left'
+    ? 'fl-left  1.0s ease-in-out infinite'
+    : 'fl-right 1.0s ease-in-out infinite';
+
+  return `
+    <svg viewBox="0 0 60 82" width="${W}" height="${H}"
+         style="display:block;margin:0 auto;overflow:visible">
       <g class="fl-figure" style="animation:${anim};transform-origin:30px 40px">
-        <circle cx="30" cy="11" r="9"  class="fl-stroke" fill="none" stroke-width="2.3"/>
-        <line x1="30" y1="20" x2="30" y2="50"  class="fl-stroke" stroke-width="2.3"/>
-        <line x1="30" y1="33" x2="10" y2="46"  class="fl-stroke" stroke-width="2.3"/>
-        <line x1="30" y1="33" x2="50" y2="46"  class="fl-stroke" stroke-width="2.3"/>
-        <line x1="30" y1="50" x2="14" y2="72"  class="fl-stroke" stroke-width="2.3"/>
-        <line x1="30" y1="50" x2="46" y2="72"  class="fl-stroke" stroke-width="2.3"/>
+        ${_figureLines(30, sc)}
       </g>
     </svg>`;
 }
 
+// Close: two figures walking toward each other
+function forroSVGClose(large) {
+  const W = large ? 150 : 100;
+  const H = large ? 115 : 74;
+  const sc = large ? 'fl-stroke-lg' : 'fl-stroke';
+  return `
+    <svg viewBox="0 0 100 82" width="${W}" height="${H}"
+         style="display:block;margin:0 auto;overflow:visible">
+      <g style="animation:fl-close-a 1.1s ease-in-out infinite;transform-origin:22px 40px">
+        ${_figureLines(22, sc)}
+      </g>
+      <g style="animation:fl-close-b 1.1s ease-in-out infinite;transform-origin:78px 40px">
+        ${_figureLines(78, sc)}
+      </g>
+    </svg>`;
+}
+
+// ── Injected CSS ─────────────────────────────────
 const FORRO_CSS = `
   <style id="forro-style">
-    @keyframes fl-left  {
+    /* Move animations */
+    @keyframes fl-left {
       0%,100% { transform: translate(0,0) rotate(0deg); }
       35%     { transform: translate(-13px,4px) rotate(-13deg); }
-      70%     { transform: translate(-6px,2px) rotate(-6deg); }
+      70%     { transform: translate(-6px,2px)  rotate(-6deg);  }
     }
     @keyframes fl-right {
       0%,100% { transform: translate(0,0) rotate(0deg); }
-      35%     { transform: translate(13px,4px) rotate(13deg); }
-      70%     { transform: translate(6px,2px) rotate(6deg); }
+      35%     { transform: translate(13px,4px)  rotate(13deg);  }
+      70%     { transform: translate(6px,2px)   rotate(6deg);   }
     }
+    /* Spin around head-to-toe axis (rotateY = vertical axis) */
     @keyframes fl-turn {
-      from { transform: rotate(0deg); }
-      to   { transform: rotate(360deg); }
+      from { transform: rotateY(0deg);   }
+      to   { transform: rotateY(360deg); }
     }
-    @keyframes fl-close {
-      0%,100% { transform: translateY(0) scale(1); }
-      50%     { transform: translateY(8px) scale(1.12); }
+    /* Two figures approaching each other */
+    @keyframes fl-close-a {
+      0%,100% { transform: translateX(0);    }
+      50%     { transform: translateX(18px); }
     }
-    .fl-stroke { stroke: #a09080; }
-    .move-card.active .fl-stroke { stroke: #c0703a; }
+    @keyframes fl-close-b {
+      0%,100% { transform: translateX(0);     }
+      50%     { transform: translateX(-18px); }
+    }
+
+    /* Colour tokens */
+    .fl-stroke    { stroke: #a09080; }
+    .fl-stroke-lg { stroke: #c0703a; }
+
+    /* Stage large-figure container */
+    #s3-stage {
+      width: 100%;
+      min-height: 140px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,248,240,0.7);
+      border-radius: 14px;
+      padding: 1rem 0.5rem 0.75rem;
+      border: 1.5px solid #e8d0b8;
+    }
+    #s3-stage .stage-label {
+      font-size: 1.05rem;
+      font-weight: bold;
+      color: #c0703a;
+      margin-top: 8px;
+    }
+    #s3-stage .stage-counter {
+      font-size: 0.78rem;
+      color: #9a8070;
+      margin-bottom: 4px;
+    }
+
+    /* Small cards (no labels — figure only) */
+    .move-card { height: 88px; }
+    .move-card.active .fl-stroke  { stroke: #c0703a; }
+    .move-card.active .fl-stroke-lg { stroke: #c0703a; }
     .move-card.active {
       background: #fff3e8;
       border-color: #c0703a;
@@ -60,31 +141,43 @@ const FORRO_CSS = `
     }
   </style>`;
 
+// ── Scene object ─────────────────────────────────
 const s3 = {
   id: 's3',
 
   render(app) {
     const { phase } = gameState.sceneData.s3;
 
+    // Small cards (figure only, no text label)
     const cardsHTML = FORRO_MOVES.map(m => `
-      <div class="move-card" id="card-${m}">
-        ${forroSVG(m)}
-        <span>${FORRO_LABELS[m]}</span>
+      <div class="move-card" id="card-${m}" title="${FORRO_LABELS[m]}">
+        ${forroSVG(m, false)}
       </div>`).join('');
 
-    let controlsHTML = '';
+    // Stage content for idle/input
+    let stageHTML = '';
     if (phase === 'idle') {
-      controlsHTML = `<button class="primary" id="btn-watch">Watch the sequence</button>`;
+      stageHTML = `
+        <p style="color:#7a6050;font-size:0.92rem;margin:0">
+          Watch the sequence of moves, then mirror them.
+        </p>`;
     } else if (phase === 'input') {
-      controlsHTML = `<p class="narrative" style="font-size:0.88rem">Your turn — click the moves in order!</p>`;
-    } else {
-      controlsHTML = `<p class="narrative">Watch carefully…</p>`;
+      stageHTML = `
+        <p style="color:#c0703a;font-weight:bold;font-size:1rem;margin:0">
+          Your turn — tap the moves in order!
+        </p>`;
     }
+    // 'showing' stage is filled dynamically by s3PlaySequence
+
+    let controlsHTML = phase === 'idle'
+      ? `<button class="primary" id="btn-watch">Watch the sequence</button>`
+      : '';
 
     app.innerHTML = `
       ${FORRO_CSS}
       <h2>Dance of the Forró</h2>
-      <p class="narrative">On the dance floor in Rio, the steps come alive. Watch the sequence, then mirror it.</p>
+      <p class="narrative">On the dance floor in Rio, the steps come alive.</p>
+      <div id="s3-stage">${stageHTML}</div>
       <div class="move-cards" id="move-cards">${cardsHTML}</div>
       <div id="s3-controls">${controlsHTML}</div>
       <div class="feedback" id="feedback"></div>
@@ -122,45 +215,73 @@ const s3 = {
   }
 };
 
+// ── Sequence playback ─────────────────────────────
+// Shows each move as a large figure in #s3-stage, then transitions to input
 function s3PlaySequence(app) {
-  const seq = gameState.sceneData.s3.sequence;
+  const seq   = gameState.sceneData.s3.sequence;
+  const stage = app.querySelector('#s3-stage');
   let step = 0;
 
   function showStep() {
+    // Clear small-card highlights
     FORRO_MOVES.forEach(m => {
       const c = app.querySelector(`#card-${m}`);
       if (c) c.classList.remove('active');
     });
 
     if (step >= seq.length) {
+      if (stage) stage.innerHTML = `
+        <p style="color:#c0703a;font-weight:bold;font-size:1rem;margin:0">
+          Your turn — tap the moves in order!
+        </p>`;
       s3Timer = setTimeout(() => {
         gameState.sceneData.s3.phase = 'input';
         gameState.sceneData.s3.input = [];
         showScene(3);
-      }, 400);
+      }, 500);
       return;
     }
 
+    const move = seq[step];
+
+    // Show large figure in stage
+    if (stage) {
+      stage.innerHTML = `
+        <div class="stage-counter">Move ${step + 1} of ${seq.length}</div>
+        ${forroSVG(move, true)}
+        <div class="stage-label">${FORRO_LABELS[move]}</div>`;
+    }
+
+    // Also highlight the corresponding small card
+    const card = app.querySelector(`#card-${move}`);
+    if (card) card.classList.add('active');
+
+    step++;
     s3Timer = setTimeout(() => {
-      const card = app.querySelector(`#card-${seq[step]}`);
-      if (card) card.classList.add('active');
-      step++;
-      s3Timer = setTimeout(() => {
-        if (card) card.classList.remove('active');
-        showStep();
-      }, 850);
-    }, 280);
+      if (card) card.classList.remove('active');
+      s3Timer = setTimeout(showStep, 200);
+    }, 1000);
   }
 
   showStep();
 }
 
+// ── Input handling ────────────────────────────────
 function handleS3Input(move, app, feedback) {
   const { sequence, input } = gameState.sceneData.s3;
   const expected = sequence[input.length];
 
   if (move === expected) {
     gameState.sceneData.s3.input.push(move);
+
+    // Show the move in the stage as confirmation
+    const stage = app.querySelector('#s3-stage');
+    if (stage) {
+      stage.innerHTML = `
+        ${forroSVG(move, true)}
+        <div class="stage-label">${FORRO_LABELS[move]}</div>`;
+    }
+
     const card = app.querySelector(`#card-${move}`);
     if (card) {
       card.classList.add('active');

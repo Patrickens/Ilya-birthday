@@ -62,7 +62,7 @@ const s2 = {
             feedback.textContent = 'The music echoes across the sand…';
             s2Audio = new Audio('BOSSA_GUITAR.mp3');
             try { s2Audio.play(); } catch(e) {}
-            setTimeout(() => showScene(3), 2800);
+            setTimeout(() => showScene(3), 8000);
           } else {
             // Re-render to show next chord
             showScene(2);
