@@ -84,9 +84,12 @@ const s1 = {
     addListener(app.querySelector('#btn-trim'), 'click', () => {
       if (this._animating) return;
       const windDeg = gameState.sceneData.s1.windDeg;
-      const optimal = (windDeg + 90) % 360;
-      const diff = Math.abs(this._sailDeg - optimal);
-      const circularDiff = Math.min(diff, 360 - diff);
+      // Accept either ±90° from the wind (port or starboard tack both valid)
+      const cdiff = (a, b) => { const d = Math.abs(a - b); return Math.min(d, 360 - d); };
+      const circularDiff = Math.min(
+        cdiff(this._sailDeg, (windDeg + 90) % 360),
+        cdiff(this._sailDeg, (windDeg + 270) % 360)
+      );
 
       if (circularDiff <= 20) {
         this._animating = true;
@@ -434,7 +437,7 @@ const s1 = {
   _drawWindLines(ctx, W, H, windDeg, t, leg) {
     ctx.save();
     ctx.translate(W / 2, H / 2);
-    ctx.rotate((windDeg + 180) * Math.PI / 180);
+    ctx.rotate((windDeg + 90) * Math.PI / 180);
 
     const D = 230;
     const yOffsets = [-65, -22, 22, 65];
@@ -514,56 +517,48 @@ const s1 = {
     ctx.fillStyle = 'rgba(255,255,255,0.1)';
     ctx.beginPath(); ctx.ellipse(-5, -8, 6, 18, -0.3, 0, Math.PI * 2); ctx.fill();
 
-    // Mast pole
-    ctx.strokeStyle = '#9a6030'; ctx.lineWidth = 2.5;
-    ctx.beginPath(); ctx.moveTo(0, -30); ctx.lineTo(0, 6); ctx.stroke();
-
-    // Mast cap
+    // Mast dot
     ctx.fillStyle = '#b07040';
     ctx.beginPath(); ctx.arc(0, 0, 4, 0, Math.PI * 2); ctx.fill();
 
-    // Sail — leaf/D shape along boom, billowing to one side
+    // Work in a rotated frame so x-axis = boom direction
     const sailRad = (sailDeg - 90) * Math.PI / 180;
     const boomLen = 52;
-    const boomX = Math.cos(sailRad) * boomLen;
-    const boomY = Math.sin(sailRad) * boomLen;
 
-    // Perpendicular direction (sail billows to this side)
-    const perpX = Math.cos(sailRad + Math.PI / 2) * 18;
-    const perpY = Math.sin(sailRad + Math.PI / 2) * 18;
+    ctx.save();
+    ctx.rotate(sailRad);
 
-    const sailGrad = ctx.createLinearGradient(
-      perpX * 0.1, perpY * 0.1,
-      boomX * 0.5 + perpX, boomY * 0.5 + perpY
-    );
-    sailGrad.addColorStop(0, 'rgba(255,252,235,0.5)');
-    sailGrad.addColorStop(0.45, 'rgba(255,248,220,0.93)');
-    sailGrad.addColorStop(1, 'rgba(220,195,145,0.4)');
+    // Sail: rectangle on one side of boom.
+    // Flip side so it always billows away from the hull centre.
+    const sFlip = (sailDeg % 360 > 180) ? 1 : -1;
+    const sStart = 6, sEnd = boomLen - 4, sH = 14 * sFlip;
+    const sailGrad = ctx.createLinearGradient(sStart, 0, sEnd, 0);
+    sailGrad.addColorStop(0,   'rgba(255,252,235,0.25)');
+    sailGrad.addColorStop(0.2, 'rgba(255,248,220,0.92)');
+    sailGrad.addColorStop(0.8, 'rgba(255,248,220,0.92)');
+    sailGrad.addColorStop(1,   'rgba(215,195,145,0.25)');
     ctx.fillStyle = sailGrad;
-    ctx.strokeStyle = 'rgba(140,100,50,0.45)';
-    ctx.lineWidth = 1.2;
+    ctx.strokeStyle = 'rgba(140,100,50,0.4)';
+    ctx.lineWidth = 1;
     ctx.beginPath();
-    // From mast → curve out → reach boom tip → curve back → mast
-    ctx.moveTo(0, 0);
-    ctx.bezierCurveTo(
-      perpX * 0.6, perpY * 0.6,
-      boomX * 0.45 + perpX, boomY * 0.45 + perpY,
-      boomX, boomY
-    );
-    ctx.bezierCurveTo(
-      boomX * 0.5 - perpX * 0.15, boomY * 0.5 - perpY * 0.15,
-      -perpX * 0.1, -perpY * 0.1,
-      0, 0
-    );
+    ctx.moveTo(sStart, 0);
+    ctx.lineTo(sEnd, 0);
+    ctx.lineTo(sEnd, sH);
+    // Slightly curved outer edge
+    ctx.quadraticCurveTo((sStart + sEnd) / 2, sH + 5 * sFlip, sStart, sH);
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
 
     // Boom drawn over sail
     ctx.strokeStyle = '#5a3810'; ctx.lineWidth = 2.5; ctx.lineCap = 'round';
-    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(boomX, boomY); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(boomLen, 0); ctx.stroke();
 
-    // Drag handle at boom tip
+    ctx.restore();
+
+    // Drag handle at boom tip (back in original space)
+    const boomX = Math.cos(sailRad) * boomLen;
+    const boomY = Math.sin(sailRad) * boomLen;
     ctx.fillStyle = 'rgba(255,255,255,0.55)';
     ctx.strokeStyle = 'rgba(200,160,80,0.8)'; ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.arc(boomX, boomY, 7, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
