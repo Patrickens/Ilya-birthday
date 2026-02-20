@@ -7,8 +7,14 @@ const CHORDS = {
 };
 const SEQUENCE = ['A', 'G', 'E', 'D'];
 
+let s2Audio = null;
+
 const s2 = {
   id: 's2',
+
+  cleanup() {
+    if (s2Audio) { s2Audio.pause(); s2Audio = null; }
+  },
 
   render(app) {
     const { index, solved } = gameState.sceneData.s2;
@@ -51,11 +57,12 @@ const s2 = {
           if (gameState.sceneData.s2.index >= 4) {
             gameState.completed[1] = true;
             saveState();
-            // Show completion message, then advance
             app.querySelector('.chord-label').textContent = '✓ A G E D — beautifully played.';
             feedback.className = 'feedback';
             feedback.textContent = 'The music echoes across the sand…';
-            setTimeout(() => showScene(3), 1500);
+            s2Audio = new Audio('BOSSA_GUITAR.mp3');
+            try { s2Audio.play(); } catch(e) {}
+            setTimeout(() => showScene(3), 2800);
           } else {
             // Re-render to show next chord
             showScene(2);
