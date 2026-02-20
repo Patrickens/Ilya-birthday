@@ -37,11 +37,9 @@ const s1 = {
       <div class="feedback" id="feedback">Drag the sail tip to catch the wind</div>
     `;
 
-    if (!this._ilya2Img) {
-      const img = new Image();
-      img.src = 'pics/ILYA_FACE_NOBG.png';
-      this._ilya2Img = img;
-    }
+    const img = new Image();
+    img.src = 'pics/ILYA_FACE_NOBG.png';
+    this._ilya2Img = img;
 
     const canvas = app.querySelector('#s1-canvas');
     canvas.width = 400;
