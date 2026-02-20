@@ -100,7 +100,7 @@ const s1 = {
         cdiff(this._sailDeg, (windDeg + 270) % 360)
       );
 
-      if (circularDiff <= 20) {
+      if (circularDiff <= 30) {
         this._animating = true;
         const leg = gameState.sceneData.s1.leg;
         feedback.className = 'feedback';
@@ -512,26 +512,26 @@ const s1 = {
 
     // Hull shadow
     ctx.fillStyle = 'rgba(0,0,0,0.22)';
-    ctx.beginPath(); ctx.ellipse(3, 4, 18, 38, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(3, 5, 22, 46, 0, 0, Math.PI * 2); ctx.fill();
 
     // Hull
-    const hullGrad = ctx.createLinearGradient(-18, 0, 18, 0);
+    const hullGrad = ctx.createLinearGradient(-22, 0, 22, 0);
     hullGrad.addColorStop(0, '#231508');
     hullGrad.addColorStop(0.4, '#4a2e10');
     hullGrad.addColorStop(1, '#321b06');
     ctx.fillStyle = hullGrad;
     ctx.strokeStyle = '#180e04';
     ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.ellipse(0, 0, 18, 38, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(0, 0, 22, 46, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
 
     // Hull sheen
     ctx.fillStyle = 'rgba(255,255,255,0.1)';
-    ctx.beginPath(); ctx.ellipse(-5, -8, 6, 18, -0.3, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(-6, -10, 7, 22, -0.3, 0, Math.PI * 2); ctx.fill();
 
     // Ilya on the boat
     const img = this._ilya2Img;
     if (img && img.complete && img.naturalHeight > 0) {
-      const iH = 38;
+      const iH = 62;
       const iW = img.naturalWidth * (iH / img.naturalHeight);
       ctx.drawImage(img, -iW / 2, -iH / 2, iW, iH);
     }
@@ -542,7 +542,7 @@ const s1 = {
 
     // Work in a rotated frame so x-axis = boom direction
     const sailRad = (sailDeg - 90) * Math.PI / 180;
-    const boomLen = 52;
+    const boomLen = 62;
 
     ctx.save();
     ctx.rotate(sailRad);
