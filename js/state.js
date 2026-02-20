@@ -6,8 +6,8 @@ const DEFAULT_STATE = {
   sceneData: {
     s1: { leg: 0, windDeg: 0 },
     s2: { index: 0, solved: [] },
-    s3: { grid: Array(25).fill(false) },
-    s4: { sequence: [], input: [], phase: 'idle' }
+    s3: { sequence: [], input: [], phase: 'idle' },
+    s4: {}
   }
 };
 

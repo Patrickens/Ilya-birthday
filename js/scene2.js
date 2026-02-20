@@ -20,7 +20,7 @@ const s2 = {
 
     app.innerHTML = `
       <h2>Song of the Shore</h2>
-      <p class="narrative">Washed up on a Brazilian beach, you find a guitar. Its inscription reads: "Play the chords that spell your age."</p>
+      <p class="narrative">Washed up on a Brazilian beach, you find a guitar. Its inscription reads: "Play the chords to spell what you are..."</p>
       <div class="chord-label">${currentChord ? `Play chord: <strong>${currentChord}</strong>` : '✓ All chords played!'}</div>
       <div class="fretboard-wrap">
         ${fretboardSVG(currentChord ? CHORDS[currentChord] : CHORDS['A'])}
