@@ -216,7 +216,8 @@ const s3 = {
 
   cleanup() {
     if (s3Timer) { clearTimeout(s3Timer); s3Timer = null; }
-    if (s3Audio) { s3Audio.pause(); s3Audio = null; }
+    // s3Audio is stopped explicitly when leaving for scene 4, not here,
+    // so music keeps playing across phase transitions within this scene.
   }
 };
 
@@ -309,6 +310,7 @@ function handleS3Input(move, app, feedback) {
     if (gameState.sceneData.s3.input.length >= sequence.length) {
       gameState.completed[2] = true;
       saveState();
+      if (s3Audio) { s3Audio.pause(); s3Audio = null; }
       feedback.textContent = 'Perfect rhythm! You feel the beat.';
       setTimeout(() => showScene(4), 1200);
     }
