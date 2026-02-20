@@ -5,7 +5,6 @@ const s5 = {
   render(app) {
     app.innerHTML = `
       <div class="final-scene">
-        <h1>Meli,</h1>
 
         <!-- Photo strip -->
         <div style="display:flex;gap:8px;width:100%">
@@ -17,8 +16,11 @@ const s5 = {
                style="height:130px;flex:1;min-width:0;object-fit:cover;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.22)">
         </div>
 
-        <p>Forty is not an ending — it's the moment the cartographer looks up and realises how much more there is to explore.</p>
-        <p>The next chapter holds what matters most: friends, family, and every wind, chord, route and dance move that brought you here — lived more fully.</p>
+        <p>Baby, you turning fawty shawty.</p>
+        <p>Winds mastered. Forró fo sho. Keepin it giddy on the guitar.</p>
+        <p>Meli by your side, horizon wide.</p>
+        <p>Little co-captain coming soon.</p>
+        <p>Now that’s a future worth mapping.</p>
 
         <!-- Birthday GIF -->
         <img src="BDAY_GIF.gif"
