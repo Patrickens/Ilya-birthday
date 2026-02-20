@@ -820,6 +820,7 @@ const scenes = [s0, s1, s2, s3, s4, s5];
 
 // ── Boot ────────────────────────────────────────
 (function init() {
-  const startScene = gameState.started ? Math.min(gameState.sceneIndex || 1, 5) : 0;
-  showScene(startScene);
+  // Always start fresh from the title screen on every page load
+  gameState = JSON.parse(JSON.stringify(DEFAULT_STATE));
+  showScene(0);
 })();
