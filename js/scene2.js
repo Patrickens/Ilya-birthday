@@ -58,6 +58,9 @@ const s2 = {
             gameState.completed[1] = true;
             saveState();
             app.querySelector('.chord-label').textContent = '✓ A G E D — beautifully played.';
+            app.querySelector('.solved-display').innerHTML = SEQUENCE.map(ch =>
+              `<span style="color:var(--accent-dark);font-weight:bold">${ch}</span>`
+            ).join(' ');
             feedback.className = 'feedback';
             feedback.textContent = 'The music echoes across the sand…';
             s2Audio = new Audio('BOSSA_GUITAR.mp3');

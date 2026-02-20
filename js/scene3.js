@@ -2,6 +2,7 @@
 const FORRO_MOVES  = ['Left', 'Right', 'Turn', 'Close'];
 const FORRO_LABELS = { Left: '← Step Left', Right: 'Step Right →', Turn: '↻ Turn', Close: '♡ Close' };
 let s3Timer = null;
+let s3Audio = null;
 
 // ── SVG stick-figure builders ────────────────────
 // Single figure (Left / Right / Turn)
@@ -182,6 +183,13 @@ const s3 = {
     const { phase } = gameState.sceneData.s3;
     const feedback  = app.querySelector('#feedback');
 
+    // Start music (loop for whole scene)
+    if (!s3Audio) {
+      s3Audio = new Audio('FORRO_MUSIC.mp3');
+      s3Audio.loop = true;
+      try { s3Audio.play(); } catch(e) {}
+    }
+
     if (phase === 'idle') {
       s3IdlePreview(app);   // start cycling through moves immediately
       addListener(app.querySelector('#btn-watch'), 'click', () => {
@@ -208,6 +216,7 @@ const s3 = {
 
   cleanup() {
     if (s3Timer) { clearTimeout(s3Timer); s3Timer = null; }
+    if (s3Audio) { s3Audio.pause(); s3Audio = null; }
   }
 };
 
