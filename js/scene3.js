@@ -148,10 +148,10 @@ const s3 = {
   render(app) {
     const { phase } = gameState.sceneData.s3;
 
-    // Small cards (figure only, no text label)
+    // Small cards — text label only (player must match text to the animation they watched)
     const cardsHTML = FORRO_MOVES.map(m => `
-      <div class="move-card" id="card-${m}" title="${FORRO_LABELS[m]}">
-        ${forroSVG(m, false)}
+      <div class="move-card" id="card-${m}">
+        <span style="font-size:1.05rem;font-weight:bold;color:var(--muted)">${FORRO_LABELS[m]}</span>
       </div>`).join('');
 
     // Stage content for idle/input
